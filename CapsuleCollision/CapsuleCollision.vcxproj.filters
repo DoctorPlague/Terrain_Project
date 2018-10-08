@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="KeyboardInput.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderLoader.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utilities.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Line.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Terrain.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="clock.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sphere.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Star.h" />
+    <ClInclude Include="TessQuad.h" />
+    <ClInclude Include="FrameBuffer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ShaderLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyboardInput.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Line.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="clock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sphere.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Star.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TessQuad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Shaders\FragmentShader.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\VertexShader.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\StarFragment.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\StarGeometry.gs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\StarVertex.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\TessControlShader.tcs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\TessEvaluationShader.tes">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\TessFragmentShader.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\TessVertexShader.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\FrameBufferFragmentShader.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\FrameBufferVertexShader.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

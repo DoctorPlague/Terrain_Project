@@ -1,0 +1,65 @@
+#version 430 core
+
+//size of output patch & no. of times the TCS will be executed
+layout (vertices = 4) out;
+
+uniform float distance;
+
+void main() {	
+	// Distance based LOD	
+	int innerNum = 1;
+	int outerNum = 1;
+
+	if (distance < 10.0f)
+	{
+		innerNum = 20;
+		outerNum = 20;
+	}
+	else if (distance < 15.0f)
+	{
+		innerNum = 10;
+		outerNum = 10;
+	}
+	else if (distance < 20.0f)
+	{
+		innerNum = 5;
+		outerNum = 5;
+	}
+	else if (distance < 30.0f)
+	{
+		innerNum = 3;
+		outerNum = 5;
+	}
+	else if (distance < 40.0f)
+	{
+		innerNum = 2;
+		outerNum = 4;
+	}
+	else if (distance < 50.0f)
+	{
+		innerNum = 1;
+		outerNum = 3;
+	}
+	else if (distance < 60.0f)
+	{
+		innerNum = 1;
+		outerNum = 2;
+	}
+	else if (distance < 70.0f)
+	{
+		innerNum = 1;
+		outerNum = 1;
+	}
+
+	if (gl_InvocationID == 0) {
+
+		gl_TessLevelInner[0] = innerNum;
+		gl_TessLevelInner[1] = innerNum;
+		gl_TessLevelOuter[0] = outerNum;
+		gl_TessLevelOuter[1] = outerNum;
+		gl_TessLevelOuter[2] = outerNum;
+		gl_TessLevelOuter[3] = outerNum;
+
+	}
+	gl_out[gl_InvocationID].gl_Position = gl_in[gl_InvocationID].gl_Position;
+}
