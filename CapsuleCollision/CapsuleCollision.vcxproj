@@ -70,8 +70,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)\Dependencies\;$(ProjectDir)\Dependencies\freetype;$(ProjectDir)\Dependencies\glm;$(ProjectDir)\Dependencies\glew;$(ProjectDir)\Dependencies\Visual Leak Detector\include;$(ProjectDir)\Dependencies\freeglut;$(IncludePath)</IncludePath>
-    <LibraryPath>$(ProjectDir)\Dependencies\freetype;$(ProjectDir)\Dependencies\;$(ProjectDir)\Dependencies\Visual Leak Detector\lib\Win32;$(ProjectDir)\Dependencies\glew;$(ProjectDir)\Dependencies\freeglut;$(ProjectDir)\Dependencies\glm;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(ProjectDir)\Dependencies\;$(ProjectDir)\Dependencies\freetype;$(ProjectDir)\Dependencies\glm;$(ProjectDir)\Dependencies\glew;$(ProjectDir)\Dependencies\Visual Leak Detector\include;$(ProjectDir)\Dependencies\freeglut;$(ProjectDir)\Dependencies\soil;$(IncludePath)</IncludePath>
+    <LibraryPath>$(ProjectDir)\Dependencies\freetype;$(ProjectDir)\Dependencies\;$(ProjectDir)\Dependencies\Visual Leak Detector\lib\Win32;$(ProjectDir)\Dependencies\glew;$(ProjectDir)\Dependencies\freeglut;$(ProjectDir)\Dependencies\glm;$(ProjectDir)\Dependencies\soil;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -81,7 +81,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>opengl32.lib;freeglut.lib;glew32.lib;vld.lib;freetype.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;freeglut.lib;glew32.lib;vld.lib;freetype.lib;SOIL.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -150,6 +150,9 @@
     <None Include="Resources\Shaders\FragmentShader.fs" />
     <None Include="Resources\Shaders\FrameBufferFragmentShader.fs" />
     <None Include="Resources\Shaders\FrameBufferVertexShader.vs" />
+    <None Include="Resources\Shaders\GrassFragmentShader.fs" />
+    <None Include="Resources\Shaders\GrassGeometryShader.gs" />
+    <None Include="Resources\Shaders\GrassVertexShader.vs" />
     <None Include="Resources\Shaders\StarFragment.fs" />
     <None Include="Resources\Shaders\StarGeometry.gs" />
     <None Include="Resources\Shaders\StarVertex.vs" />

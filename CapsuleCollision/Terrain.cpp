@@ -2,6 +2,7 @@
 #include "ShaderLoader.h"
 #include "Utilities.h"
 #include "Camera.h"
+#include "Dependencies\soil\SOIL.h"
 
 Terrain::Terrain()
 {
@@ -24,7 +25,12 @@ void Terrain::Initialize()
 	m_program = ShaderLoader::GetInstance().CreateProgram("Resources\\Shaders\\VertexShader.vs",
 		"Resources\\Shaders\\FragmentShader.fs");	
 
+	m_grassProgram = ShaderLoader::GetInstance().CreateProgram("Resources\\Shaders\\GrassVertexShader.vs",
+		"Resources\\Shaders\\GrassFragmentShader.fs",
+		"Resources\\Shaders\\GrassGeometryShader.gs");
+
 	LoadHeightMap();
+	LoadVegeMap();
 	Smooth();
 	BuildVertexBuffer();
 	BuildIndexBuffer();
@@ -34,6 +40,36 @@ void Terrain::Initialize()
 
 	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TerrainVertex), (void*)(offsetof(TerrainVertex, v3Color)));
 	glEnableVertexAttribArray(1);
+
+
+	// Grass texture
+	glGenTextures(1, &m_texture);
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+	int width, height;
+	std::string texture = "Resources\\Images\\GrassTexture.png";
+	unsigned char* image = SOIL_load_image(
+		texture.c_str(), // File path/name 
+		&width, // Output for the image width
+		&height, // Output for the image height
+		0, // Output for number of channels
+		SOIL_LOAD_RGBA); // Load RGBA values only
+	glTexImage2D(
+		GL_TEXTURE_2D, // Type of texture
+		0, // Mipmap level, 0 for base
+		GL_RGBA, // Number of color components in texture
+		width, // Width of the texture
+		height, // Height of the texture
+		0, // This value must be 0
+		GL_RGBA, // Format for the pixel data
+		GL_UNSIGNED_BYTE, // Data type of the pixel data
+		image); // Pointer to image data in memory
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glGenerateMipmap(GL_TEXTURE_2D);
+	SOIL_free_image_data(image);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void Terrain::BuildVertexBuffer()
@@ -56,7 +92,17 @@ void Terrain::BuildVertexBuffer()
 			float y = m_vecHeightMap[i * m_iNumCols + j];				
 			
 			vertices[i * m_iNumCols + j].v3Pos = glm::vec3(x, y, z);
-			vertices[i * m_iNumCols + j].v3Color = glm::vec3(1.0f, 0.0f, 0.0f);
+
+			// Using different colors to know which parts should have vegetation or not
+			if (m_vecVegeMap[i * m_iNumCols + j] > 24.0f)
+			{
+				vertices[i * m_iNumCols + j].v3Color = glm::vec3(0.0f, 0.0f, 0.0f);
+			}
+			else
+			{
+				vertices[i * m_iNumCols + j].v3Color = glm::vec3(0.0f, 1.0f, 0.0f);
+			}
+			
 		}
 	}	
 		
@@ -141,6 +187,32 @@ void Terrain::LoadHeightMap()
 	}
 }
 
+void Terrain::LoadVegeMap()
+{
+	// A height for each vertex
+	std::vector<unsigned char> in(m_iNumRows * m_iNumCols);
+
+	// Open the file.
+	std::ifstream inFile;
+	inFile.open(m_strFilePath.c_str(), std::ios_base::binary);
+
+	if (inFile)
+	{
+		// Read the RAW bytes.
+		inFile.read((char*)&in[0], (std::streamsize)in.size());
+
+		// Done with file.
+		inFile.close();
+	}
+
+	// Copy the array data into a float array, and scale and offset the heights.
+	m_vecVegeMap.resize(m_iNumRows * m_iNumCols, 0);
+	for (UINT i = 0; i < m_iNumRows * m_iNumCols; ++i)
+	{
+		m_vecVegeMap[i] = static_cast<float>(in[i]) * m_fHeightScale + m_fHeightOffset;
+	}
+}
+
 float Terrain::GetHeight(float x, float z) const
 {
 	// Transform from terrain local space to "cell" space.
@@ -150,13 +222,7 @@ float Terrain::GetHeight(float x, float z) const
 	// Get the row and column we are in.
 	int row = static_cast<int>(floorf(d));
 	int col = static_cast<int>(floorf(c));
-
-	// Check that we're on the terrain
-	if (row > m_iNumRows - 2 || col > m_iNumCols - 2 || row < 0 || col < 0)
-	{
-		return -11111.0f;
-	}
-
+	
 	// Grab the heights of the cell we are in.
 	// A*--*B
 	//  | /|
@@ -246,12 +312,13 @@ float Terrain::Average(UINT _a, UINT _b)
 
 void Terrain::Render()
 {
+	//// ** Render Normal Terrain ** ////
 	// Set Culling and Use program	
 	glUseProgram(m_program);
 
 	// Pass mvp to shader
 	glm::mat4 MVP = Camera::GetInstance()->GetProj() * Camera::GetInstance()->GetView() * glm::mat4();
-	GLint MVPloc = glGetUniformLocation(m_program, "MVP");
+	GLint MVPloc = glGetUniformLocation(m_program, "mvp");
 	glUniformMatrix4fv(MVPloc, 1, GL_FALSE, value_ptr(MVP));
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -260,5 +327,31 @@ void Terrain::Render()
 	glBindVertexArray(m_vao);
 	//glDrawArrays(GL_TRIANGLES, 0, m_vecVertices.size());
 	glDrawElements(GL_TRIANGLES, m_vecIndices.size(), GL_UNSIGNED_INT, 0);
+	glBindVertexArray(0);	
+}
+
+void Terrain::RenderGrass()
+{
+	//// ** Render Grass Terrain ** ////
+	// Set Culling and Use program	
+	glUseProgram(m_grassProgram);
+
+	// Pass mvp to shader
+	glm::mat4 MVP = Camera::GetInstance()->GetProj() * Camera::GetInstance()->GetView() * glm::mat4();
+	GLint MVPloc = glGetUniformLocation(m_program, "mvp");
+	glUniformMatrix4fv(MVPloc, 1, GL_FALSE, value_ptr(MVP));
+
+	// pass texture
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+	glUniform1i(glGetUniformLocation(m_program, "tex"), 0);
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	// Bind vao and draw object, unbind vao
+	glBindVertexArray(m_vao);	
+	glDrawElements(GL_POINTS, m_vecIndices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
+
+	glDisable(GL_BLEND);
 }

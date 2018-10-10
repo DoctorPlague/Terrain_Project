@@ -108,5 +108,14 @@
     <None Include="Resources\Shaders\FrameBufferVertexShader.vs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="Resources\Shaders\GrassFragmentShader.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\GrassVertexShader.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\GrassGeometryShader.gs">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

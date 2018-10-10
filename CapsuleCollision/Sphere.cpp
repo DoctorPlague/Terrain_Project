@@ -111,7 +111,7 @@ void Sphere::Render()
 
 	m_model = glm::translate(glm::mat4(), m_translate) * glm::rotate(glm::mat4(), glm::radians(m_fangle), m_rotationAxis) * glm::scale(glm::mat4(), m_scaling);
 	glm::mat4 MVP = Camera::GetInstance()->GetProj() * Camera::GetInstance()->GetView() * m_model;
-	GLint MVPloc = glGetUniformLocation(m_program, "MVP");
+	GLint MVPloc = glGetUniformLocation(m_program, "mvp");
 	glUniformMatrix4fv(MVPloc, 1, GL_FALSE, value_ptr(MVP));	
 
 	glEnable(GL_DEPTH_TEST);
@@ -123,11 +123,8 @@ void Sphere::Render()
 
 void Sphere::SetHeight(float _height)
 {
-	// Check we're on the terrain
-	if (_height != -11111.0f)
-	{
-		m_translate.y = _height + 1.5f;
-	}
+	// Check we're on the terrain	
+	m_translate.y = _height + 1.5f;	
 }
 
 void Sphere::RelativeTranslation(glm::vec3 _translation, float _deltaTick)

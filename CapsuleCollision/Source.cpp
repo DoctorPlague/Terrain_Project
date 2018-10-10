@@ -56,6 +56,7 @@ void Render()
 	exampleFrameBuffer->BindFrameBuffer();	
 	
 	exampleTerrain->Render();
+	exampleTerrain->RenderGrass();
 	exampleSphere->Render();
 	exampleStar->Render();
 	exampleTessQuad->Render();
@@ -74,7 +75,7 @@ void Update()
 	// Update stuff goes here		
 	glm::vec3 spherePos = exampleSphere->GetTranslate();
 	float fHeight = exampleTerrain->GetHeight(spherePos.x, spherePos.z);	
-	cameraDistanceOffset = glm::clamp(cameraDistanceOffset, 2.0f, 100.0f);
+	cameraDistanceOffset = glm::clamp(cameraDistanceOffset, 0.5f, 100.0f);
 	exampleSphere->SetHeight(fHeight);
 	exampleStar->SetPosition(spherePos + glm::vec3(0.0f, 3.0f, 0.0f));
 	exampleTessQuad->SetPosition(spherePos + glm::vec3(0.0f, 5.0f, 0.0f));	
