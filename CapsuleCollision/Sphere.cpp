@@ -130,4 +130,6 @@ void Sphere::SetHeight(float _height)
 void Sphere::RelativeTranslation(glm::vec3 _translation, float _deltaTick)
 {
 	m_translate = m_translate + (_translation * _deltaTick);
+	m_translate.x = glm::clamp(m_translate.x, -255.0f, 255.0f);
+	m_translate.z = glm::clamp(m_translate.z, -255.0f, 255.0f);
 }

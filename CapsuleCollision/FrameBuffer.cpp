@@ -4,6 +4,7 @@
 
 FrameBuffer::FrameBuffer()
 {
+	
 }
 
 
@@ -84,22 +85,21 @@ void FrameBuffer::Initialize()
 	glEnableVertexAttribArray(1);
 }
 
-void FrameBuffer::Render()
+void FrameBuffer::Render(float _deltaTotal)
 {
-	glUseProgram(m_program);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glActiveTexture(GL_TEXTURE0);
-	glUniform1i(glGetUniformLocation(m_program, "screenTexture"), 0);	
-	glUniform1f(glGetUniformLocation(m_program, "iTime"), CClock::GetInstance()->GetDeltaTick());
+	glUseProgram(m_program);	
+	glActiveTexture(GL_TEXTURE0);	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 	glBindVertexArray(m_QUADvao);
+
 	glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-	//glDrawArrays(GL_TRIANGLES, 0, 6);
+	glUniform1i(glGetUniformLocation(m_program, "screenTexture"), 0);	
+	glUniform1f(glGetUniformLocation(m_program, "dTime"), _deltaTotal);
+	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);	
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);	
-
-	glUseProgram(0);
+	//glUseProgram(0);
 }
 
 void FrameBuffer::BindFrameBuffer()

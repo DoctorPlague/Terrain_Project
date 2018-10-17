@@ -14,6 +14,7 @@ Star* exampleStar = new Star();
 TessQuad* exampleTessQuad = new TessQuad();
 FrameBuffer* exampleFrameBuffer = new FrameBuffer();
 float cameraDistanceOffset = 0;
+float fDeltaTotal = 0.0f;
 
 void Render();
 void Update();
@@ -49,8 +50,7 @@ int main(int argc, char** argv) {
 }
 
 void Render()
-{	
-	CClock::GetInstance()->Process();
+{		
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	exampleFrameBuffer->BindFrameBuffer();	
@@ -61,7 +61,7 @@ void Render()
 	exampleStar->Render();
 	exampleTessQuad->Render();
 	
-	exampleFrameBuffer->Render();
+	exampleFrameBuffer->Render(fDeltaTotal);
 
 	glutSwapBuffers();
 }
@@ -71,6 +71,7 @@ void Update()
 	// Process time
 	CClock::GetInstance()->Process();
 	float fDeltaTick = CClock::GetInstance()->GetDeltaTick() / 1000;
+	fDeltaTotal += fDeltaTick;
 
 	// Update stuff goes here		
 	glm::vec3 spherePos = exampleSphere->GetTranslate();
@@ -103,11 +104,11 @@ void Update()
 	}
 	if (Input::GetInstance()->MouseState[0] == INPUT_FIRST_PRESS || Input::GetInstance()->MouseState[0] == INPUT_HOLD)
 	{
-		cameraDistanceOffset += 50.0f * fDeltaTick;
+		cameraDistanceOffset -= 50.0f * fDeltaTick;
 	}
 	if (Input::GetInstance()->MouseState[2] == INPUT_FIRST_PRESS || Input::GetInstance()->MouseState[2] == INPUT_HOLD)
 	{
-		cameraDistanceOffset -= 50.0f * fDeltaTick;
+		cameraDistanceOffset += 50.0f * fDeltaTick;
 	}
 
 	glutPostRedisplay();

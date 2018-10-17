@@ -38,10 +38,10 @@ private:
 	std::vector<int> m_vecIndices;
 	std::vector<float> m_vecHeightMap;
 	std::vector<float> m_vecVegeMap;
-	int m_iNumIndices;
+	unsigned int m_iNumIndices;
 	
-	int m_iNumCols;
-	int m_iNumRows;
+	unsigned int m_iNumCols;
+	unsigned int m_iNumRows;
 
 	std::string m_strFilePath;
 	float m_fHeightScale;

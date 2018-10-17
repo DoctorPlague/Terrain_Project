@@ -35,9 +35,15 @@
     <ClInclude Include="Sphere.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Star.h" />
-    <ClInclude Include="TessQuad.h" />
-    <ClInclude Include="FrameBuffer.h" />
+    <ClInclude Include="FrameBuffer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Star.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TessQuad.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShaderLoader.cpp">

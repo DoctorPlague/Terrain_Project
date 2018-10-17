@@ -5,7 +5,7 @@ out vec4 FragColor;
 in vec2 TexCoords;
 
 uniform sampler2D screenTexture;
-uniform float iTime;
+uniform float dTime;
 
 void main()
 { 
@@ -15,8 +15,8 @@ void main()
 	
 	// blur amount
 	float blur = 0.0;	
-	blur = (1.0 + sin(iTime*6.0)) * 0.5;
-	blur *= 1.0 + sin(iTime*16.0) * 0.5;
+	blur = (1.0 + sin(dTime*6.0)) * 0.5;
+	blur *= 1.0 + sin(dTime*16.0) * 0.5;
 	blur = pow(blur, 3.0);
 	blur *= 0.05;
 	// reduce blur towards center

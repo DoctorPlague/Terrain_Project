@@ -10,8 +10,8 @@ Terrain::Terrain()
 	m_iNumRows = 513;
 	m_fHeightScale = 0.35f;
 	m_fHeightOffset = -20.0f;
-	m_fWidth = m_iNumCols;
-	m_fDepth = m_iNumRows;
+	m_fWidth = static_cast<float>(m_iNumCols);
+	m_fDepth = static_cast<float>(m_iNumRows);
 	m_strFilePath = "Resources\\Images\\coastMountain513.raw";
 }
 
@@ -82,11 +82,11 @@ void Terrain::BuildVertexBuffer()
 	std::vector<TerrainVertex> vertices((m_iNumCols * m_iNumRows));
 	
 	int CurrentIndex = 0;
-	for (int i = 0; i < m_iNumRows; ++i)
+	for (unsigned int i = 0; i < m_iNumRows; ++i)
 	{
 		float z = halfDepth - i;
 	
-		for (int j = 0; j < m_iNumCols; ++j)
+		for (unsigned int j = 0; j < m_iNumCols; ++j)
 		{
 			float x = -halfWidth + j;
 			float y = m_vecHeightMap[i * m_iNumCols + j];				
@@ -136,11 +136,11 @@ void Terrain::BuildIndexBuffer()
 		
 	std::vector<int> vecIndices(((m_iNumRows - 1) * (m_iNumCols - 1) * 2) * 3);
 	//std::vector<int> vecIndices;
-	int CurrentIndex = 0;
+	unsigned int CurrentIndex = 0;
 	
-	for (int i = 0; i < m_iNumRows - 1; ++i)
+	for (unsigned int i = 0; i < m_iNumRows - 1; ++i)
 	{
-		for (int j = 0; j < m_iNumCols - 1; ++j)
+		for (unsigned int j = 0; j < m_iNumCols - 1; ++j)
 		{
 			vecIndices[CurrentIndex + 0] = i * m_iNumCols + j;
 			vecIndices[CurrentIndex + 1] = i * m_iNumCols + j + 1;

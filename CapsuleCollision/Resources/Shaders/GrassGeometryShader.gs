@@ -46,11 +46,11 @@ void main() {
 		texCoord = vec2(0.0f, 1.0f);
 		EmitVertex();
 
-		gl_Position = gs_in[0].position + rotatedMVP90 * vec4(2.0f, 2.0f, 0.0f, 0.0f);	
+		gl_Position = gs_in[0].position + rotatedMVP90 * vec4(2.0f, 2.5f, 0.0f, 0.0f);	
 		texCoord = vec2(1.0f, 0.0f);
 		EmitVertex();
 
-		gl_Position = gs_in[0].position + rotatedMVP90 * vec4(-2.0f, 2.0f, 0.0f, 0.0f);		
+		gl_Position = gs_in[0].position + rotatedMVP90 * vec4(-2.0f, 2.5f, 0.0f, 0.0f);		
 		texCoord = vec2(0.0f, 0.0f);
 		EmitVertex();
 		EndPrimitive();		
