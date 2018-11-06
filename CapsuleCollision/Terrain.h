@@ -7,7 +7,8 @@
 struct TerrainVertex
 {
 	glm::vec3 v3Pos;
-	glm::vec3 v3Color;
+	glm::vec2 v2Tex;
+	glm::vec3 v3Norm;
 };
 
 class Terrain
@@ -19,13 +20,11 @@ public:
 	void BuildVertexBuffer();
 	void BuildIndexBuffer();
 	void LoadHeightMap();
-	void LoadVegeMap();
 	float GetHeight(float x, float z) const;
 	void Smooth();
 	bool InBounds(UINT _a, UINT _b);	
 	float Average(UINT _a, UINT _b);
 	void Render();
-	void RenderGrass();
 
 private:		
 	GLuint m_vbo;
@@ -37,7 +36,7 @@ private:
 	std::vector<TerrainVertex> m_vecVertices;
 	std::vector<int> m_vecIndices;
 	std::vector<float> m_vecHeightMap;
-	std::vector<float> m_vecVegeMap;
+	std::vector<glm::vec3> m_vecNormals;
 	unsigned int m_iNumIndices;
 	
 	unsigned int m_iNumCols;

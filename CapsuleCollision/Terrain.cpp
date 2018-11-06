@@ -25,12 +25,7 @@ void Terrain::Initialize()
 	m_program = ShaderLoader::GetInstance().CreateProgram("Resources\\Shaders\\VertexShader.vs",
 		"Resources\\Shaders\\FragmentShader.fs");	
 
-	m_grassProgram = ShaderLoader::GetInstance().CreateProgram("Resources\\Shaders\\GrassVertexShader.vs",
-		"Resources\\Shaders\\GrassFragmentShader.fs",
-		"Resources\\Shaders\\GrassGeometryShader.gs");
-
-	LoadHeightMap();
-	LoadVegeMap();
+	LoadHeightMap();	
 	Smooth();
 	BuildVertexBuffer();
 	BuildIndexBuffer();
@@ -38,7 +33,10 @@ void Terrain::Initialize()
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TerrainVertex), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(TerrainVertex), (void*)(offsetof(TerrainVertex, v3Color)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(TerrainVertex), (void*)(offsetof(TerrainVertex, v2Tex)));
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(TerrainVertex), (void*)(offsetof(TerrainVertex, v3Norm)));
 	glEnableVertexAttribArray(1);
 
 
@@ -46,7 +44,7 @@ void Terrain::Initialize()
 	glGenTextures(1, &m_texture);
 	glBindTexture(GL_TEXTURE_2D, m_texture);
 	int width, height;
-	std::string texture = "Resources\\Images\\GrassTexture.png";
+	std::string texture = "Resources\\Images\\TerrainTexture2.jpg";
 	unsigned char* image = SOIL_load_image(
 		texture.c_str(), // File path/name 
 		&width, // Output for the image width
@@ -63,10 +61,10 @@ void Terrain::Initialize()
 		GL_RGBA, // Format for the pixel data
 		GL_UNSIGNED_BYTE, // Data type of the pixel data
 		image); // Pointer to image data in memory
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -74,6 +72,27 @@ void Terrain::Initialize()
 
 void Terrain::BuildVertexBuffer()
 {		
+	// Generate Normals		
+	m_vecNormals.resize(m_iNumRows * m_iNumCols, glm::vec3());
+
+	float invTwoDX = 1.0f / (2.0f * 1.0f); // 1.0f is cell seperation 
+	float invTwoDZ = 1.0f / (2.0f * 1.0f);
+	for (UINT i = 2; i < m_iNumRows - 1; ++i) {
+		for (UINT j = 2; j < m_iNumCols - 1; ++j) {
+			float t = m_vecHeightMap[(i - 1)* m_iNumCols + j];
+			float b = m_vecHeightMap[(i + 1)* m_iNumCols + j];
+			float l = m_vecHeightMap[i * m_iNumCols + j - 1];
+			float r = m_vecHeightMap[i * m_iNumCols + j + 1];
+
+			glm::vec3 tanZ(0.0f, (t - b) * invTwoDZ, 1.0f);
+			glm::vec3 tanX(1.0f, (r - l) * invTwoDX, 0.0f);
+
+			glm::vec3 N = glm::cross(tanZ, tanX);
+			glm::normalize(N);
+			m_vecNormals[i * m_iNumCols + j] = N;
+		}
+	}
+
 	float halfWidth = (m_iNumCols - 1) * 0.5f;
 	float halfDepth = (m_iNumRows - 1) * 0.5f;
 	float du = 1.0f / (m_iNumCols - 1);
@@ -92,17 +111,8 @@ void Terrain::BuildVertexBuffer()
 			float y = m_vecHeightMap[i * m_iNumCols + j];				
 			
 			vertices[i * m_iNumCols + j].v3Pos = glm::vec3(x, y, z);
-
-			// Using different colors to know which parts should have vegetation or not
-			if (m_vecVegeMap[i * m_iNumCols + j] > 24.0f)
-			{
-				vertices[i * m_iNumCols + j].v3Color = glm::vec3(0.0f, 0.0f, 0.0f);
-			}
-			else
-			{
-				vertices[i * m_iNumCols + j].v3Color = glm::vec3(0.0f, 1.0f, 0.0f);
-			}
-			
+			vertices[i * m_iNumCols + j].v2Tex = glm::vec2(j*du, i*dv);
+			vertices[i * m_iNumCols + j].v3Norm = m_vecNormals[i * m_iNumCols + j];
 		}
 	}	
 		
@@ -117,23 +127,7 @@ void Terrain::BuildVertexBuffer()
 }
 
 void Terrain::BuildIndexBuffer()
-{		
-	//std::vector<int> vecIndices(6);
-	//
-	//vecIndices[0] = 0;
-	//vecIndices[1] = 1;
-	//vecIndices[2] = 2;
-	//vecIndices[3] = 0;
-	//vecIndices[4] = 2;
-	//vecIndices[5] = 3;
-	//
-	//m_vecIndices = vecIndices;
-	//
-	//GLuint uiEBO;
-	//glGenBuffers(1, &uiEBO);
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uiEBO);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, m_vecIndices.size() * sizeof(int), &m_vecIndices[0], GL_STATIC_DRAW);
-		
+{			
 	std::vector<int> vecIndices(((m_iNumRows - 1) * (m_iNumCols - 1) * 2) * 3);
 	//std::vector<int> vecIndices;
 	unsigned int CurrentIndex = 0;
@@ -187,31 +181,7 @@ void Terrain::LoadHeightMap()
 	}
 }
 
-void Terrain::LoadVegeMap()
-{
-	// A height for each vertex
-	std::vector<unsigned char> in(m_iNumRows * m_iNumCols);
 
-	// Open the file.
-	std::ifstream inFile;
-	inFile.open(m_strFilePath.c_str(), std::ios_base::binary);
-
-	if (inFile)
-	{
-		// Read the RAW bytes.
-		inFile.read((char*)&in[0], (std::streamsize)in.size());
-
-		// Done with file.
-		inFile.close();
-	}
-
-	// Copy the array data into a float array, and scale and offset the heights.
-	m_vecVegeMap.resize(m_iNumRows * m_iNumCols, 0);
-	for (UINT i = 0; i < m_iNumRows * m_iNumCols; ++i)
-	{
-		m_vecVegeMap[i] = static_cast<float>(in[i]) * m_fHeightScale + m_fHeightOffset;
-	}
-}
 
 float Terrain::GetHeight(float x, float z) const
 {
@@ -321,37 +291,22 @@ void Terrain::Render()
 	GLint MVPloc = glGetUniformLocation(m_program, "mvp");
 	glUniformMatrix4fv(MVPloc, 1, GL_FALSE, value_ptr(MVP));
 
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	// Pass campos
+	glm::vec3 camPos = Camera::GetInstance()->GetPos();
+	glUniform3fv(glGetUniformLocation(m_program, "camPos"), 1, value_ptr(camPos));
+
+	// Pass Tex
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_texture);
+	glUniform1i(glGetUniformLocation(m_program, "tex"), 0);
+
+	glUniformMatrix4fv(glGetUniformLocation(m_program, "model"), 1, GL_FALSE, value_ptr(glm::mat4()));
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	// Bind vao and draw object, unbind vao
 	glBindVertexArray(m_vao);
 	//glDrawArrays(GL_TRIANGLES, 0, m_vecVertices.size());
 	glDrawElements(GL_TRIANGLES, m_vecIndices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);	
-}
-
-void Terrain::RenderGrass()
-{
-	//// ** Render Grass Terrain ** ////
-	// Set Culling and Use program	
-	glUseProgram(m_grassProgram);
-
-	// Pass mvp to shader
-	glm::mat4 MVP = Camera::GetInstance()->GetProj() * Camera::GetInstance()->GetView() * glm::mat4();
-	GLint MVPloc = glGetUniformLocation(m_program, "mvp");
-	glUniformMatrix4fv(MVPloc, 1, GL_FALSE, value_ptr(MVP));
-
-	// pass texture
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, m_texture);
-	glUniform1i(glGetUniformLocation(m_program, "tex"), 0);
-
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	// Bind vao and draw object, unbind vao
-	glBindVertexArray(m_vao);	
-	glDrawElements(GL_POINTS, m_vecIndices.size(), GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
-
-	glDisable(GL_BLEND);
 }

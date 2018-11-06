@@ -21,6 +21,7 @@ private:
 	GLuint m_vbo;
 	GLuint m_vao;
 	GLuint m_ebo;
+	GLuint m_texture;
 	int m_drawType;
 	GLuint m_indiceCount;
 	GLuint m_program;

@@ -7,8 +7,10 @@
 #include "Star.h"
 #include "TessQuad.h"
 #include "FrameBuffer.h"
+#include "ssAnimatedModel.h"
 
 Terrain* exampleTerrain = new Terrain();
+ssAnimatedModel* exampleModel;// = new ssAnimatedModel("Resources\\Images\\theDude_idle_run.DAE", "Resources\\Images\\theDude.png");
 Sphere* exampleSphere = new Sphere();
 Star* exampleStar = new Star();
 TessQuad* exampleTessQuad = new TessQuad();
@@ -39,7 +41,13 @@ int main(int argc, char** argv) {
 	exampleSphere->Initialize(glm::vec3(), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 0.0f, 1.0f), 0.0f);
 	exampleTessQuad->Initialize(glm::vec3(), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), 0.0f);
 	exampleFrameBuffer->Initialize();
-	exampleTerrain->Initialize();
+	exampleTerrain->Initialize();	
+
+	exampleModel = new ssAnimatedModel("Resources\\Images\\theDude_idle_run.DAE", "Resources\\Images\\theDude.png");
+	exampleModel->setCurrentAnimation(0, 30); // set idle animation
+	exampleModel->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+	exampleModel->setScale(glm::vec3(0.0675f));
+	exampleModel->setSpeed(50.0f);
 
 	glutDisplayFunc(Render);
 	glutIdleFunc(Update);
@@ -56,10 +64,10 @@ void Render()
 	exampleFrameBuffer->BindFrameBuffer();	
 	
 	exampleTerrain->Render();
-	exampleTerrain->RenderGrass();
 	exampleSphere->Render();
-	exampleStar->Render();
-	exampleTessQuad->Render();
+	//exampleStar->Render();
+	//exampleTessQuad->Render();
+	exampleModel->render(CClock::GetInstance()->GetDeltaTick(), exampleTerrain);
 	
 	exampleFrameBuffer->Render(fDeltaTotal);
 
@@ -81,27 +89,54 @@ void Update()
 	exampleStar->SetPosition(spherePos + glm::vec3(0.0f, 3.0f, 0.0f));
 	exampleTessQuad->SetPosition(spherePos + glm::vec3(0.0f, 5.0f, 0.0f));	
 
-	Camera::GetInstance()->UpdatePosition(exampleSphere->GetTranslate() + glm::vec3(0.0f, cameraDistanceOffset, cameraDistanceOffset));
+	Camera::GetInstance()->UpdatePosition(exampleModel->GetPosition() + glm::vec3(0.0f, cameraDistanceOffset, cameraDistanceOffset));
 	Camera::GetInstance()->Update();
 
 	// Update input
 	Input::GetInstance()->Update();
-	if (Input::GetInstance()->KeyState['a'] == INPUT_FIRST_PRESS || Input::GetInstance()->KeyState['a'] == INPUT_HOLD)
+	if (Input::GetInstance()->KeyState['a'] == INPUT_HOLD && Input::GetInstance()->KeyState['d'] != INPUT_HOLD)
 	{
-		exampleSphere->RelativeTranslation(glm::vec3(-25.0f, 0.0f, 0.0f), fDeltaTick);
+		//exampleSphere->RelativeTranslation(glm::vec3(-25.0f, 0.0f, 0.0f), fDeltaTick);	
+		exampleModel->rotate(90.0f);
+		
 	}
-	if (Input::GetInstance()->KeyState['d'] == INPUT_FIRST_PRESS || Input::GetInstance()->KeyState['d'] == INPUT_HOLD)
+	else if (Input::GetInstance()->KeyState['d'] == INPUT_HOLD && Input::GetInstance()->KeyState['a'] != INPUT_HOLD)
 	{
-		exampleSphere->RelativeTranslation(glm::vec3(25.0f, 0.0f, 0.0f), fDeltaTick);
+		//exampleSphere->RelativeTranslation(glm::vec3(25.0f, 0.0f, 0.0f), fDeltaTick);		
+		exampleModel->rotate(-90.0f);
 	}
+	else
+	{
+		exampleModel->rotate(0.0f);
+	}
+
 	if (Input::GetInstance()->KeyState['w'] == INPUT_FIRST_PRESS || Input::GetInstance()->KeyState['w'] == INPUT_HOLD)
 	{
-		exampleSphere->RelativeTranslation(glm::vec3(0.0f, 0.0f, -25.0f), fDeltaTick);
+		//exampleSphere->RelativeTranslation(glm::vec3(0.0f, 0.0f, -25.0f), fDeltaTick);		
+		exampleModel->move(25.0f);
+		if (exampleModel->bMoving == false) {
+			exampleModel->bMoving = true;
+			exampleModel->setCurrentAnimation(31, 50); // run animation
+		}
 	}
-	if (Input::GetInstance()->KeyState['s'] == INPUT_FIRST_PRESS || Input::GetInstance()->KeyState['s'] == INPUT_HOLD)
+	else if (Input::GetInstance()->KeyState['s'] == INPUT_FIRST_PRESS || Input::GetInstance()->KeyState['s'] == INPUT_HOLD)
 	{
-		exampleSphere->RelativeTranslation(glm::vec3(0.0f, 0.0f, 25.0f), fDeltaTick);
+		//exampleSphere->RelativeTranslation(glm::vec3(0.0f, 0.0f, 25.0f), fDeltaTick);
+		exampleModel->move(-25.0f);
+		if (exampleModel->bMoving == false) {
+			exampleModel->bMoving = true;
+			exampleModel->setCurrentAnimation(51, 70); // run animation
+		}
 	}
+	else
+	{
+		exampleModel->move(0.0f);
+		if (exampleModel->bMoving == true) {
+			exampleModel->bMoving = false;
+			exampleModel->setCurrentAnimation(0, 30); //idle animation
+		}
+	}
+
 	if (Input::GetInstance()->MouseState[0] == INPUT_FIRST_PRESS || Input::GetInstance()->MouseState[0] == INPUT_HOLD)
 	{
 		cameraDistanceOffset -= 50.0f * fDeltaTick;
