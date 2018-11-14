@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Dependencies\soil\SOIL.h"
 
+
 Terrain::Terrain()
 {
 	m_iNumCols = 513;
@@ -13,6 +14,7 @@ Terrain::Terrain()
 	m_fWidth = static_cast<float>(m_iNumCols);
 	m_fDepth = static_cast<float>(m_iNumRows);
 	m_strFilePath = "Resources\\Images\\coastMountain513.raw";
+	m_shadowMap = std::make_shared<ShadowMap>();
 }
 
 Terrain::~Terrain()
@@ -22,13 +24,16 @@ Terrain::~Terrain()
 void Terrain::Initialize()
 {	
 	// Create program
-	m_program = ShaderLoader::GetInstance().CreateProgram("Resources\\Shaders\\VertexShader.vs",
-		"Resources\\Shaders\\FragmentShader.fs");	
+	m_program = ShaderLoader::GetInstance().CreateProgram("Resources\\Shaders\\TerrainVertex.vs",
+		"Resources\\Shaders\\TerrainFragment.fs");	
+
+	m_shadowMapProgram = ShaderLoader::GetInstance().CreateProgram("Resources\\Shaders\\ShadowVertex.vs",
+		"Resources\\Shaders\\ShadowFragment.fs");	
 
 	LoadHeightMap();	
 	Smooth();
 	BuildVertexBuffer();
-	BuildIndexBuffer();
+	BuildIndexBuffer();	
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(TerrainVertex), (void*)0);
 	glEnableVertexAttribArray(0);
@@ -68,31 +73,12 @@ void Terrain::Initialize()
 	glGenerateMipmap(GL_TEXTURE_2D);
 	SOIL_free_image_data(image);
 	glBindTexture(GL_TEXTURE_2D, 0);
+
+	m_shadowMap->Initialize();
 }
 
 void Terrain::BuildVertexBuffer()
 {		
-	// Generate Normals		
-	m_vecNormals.resize(m_iNumRows * m_iNumCols, glm::vec3());
-
-	float invTwoDX = 1.0f / (2.0f * 1.0f); // 1.0f is cell seperation 
-	float invTwoDZ = 1.0f / (2.0f * 1.0f);
-	for (UINT i = 2; i < m_iNumRows - 1; ++i) {
-		for (UINT j = 2; j < m_iNumCols - 1; ++j) {
-			float t = m_vecHeightMap[(i - 1)* m_iNumCols + j];
-			float b = m_vecHeightMap[(i + 1)* m_iNumCols + j];
-			float l = m_vecHeightMap[i * m_iNumCols + j - 1];
-			float r = m_vecHeightMap[i * m_iNumCols + j + 1];
-
-			glm::vec3 tanZ(0.0f, (t - b) * invTwoDZ, 1.0f);
-			glm::vec3 tanX(1.0f, (r - l) * invTwoDX, 0.0f);
-
-			glm::vec3 N = glm::cross(tanZ, tanX);
-			glm::normalize(N);
-			m_vecNormals[i * m_iNumCols + j] = N;
-		}
-	}
-
 	float halfWidth = (m_iNumCols - 1) * 0.5f;
 	float halfDepth = (m_iNumRows - 1) * 0.5f;
 	float du = 1.0f / (m_iNumCols - 1);
@@ -112,9 +98,32 @@ void Terrain::BuildVertexBuffer()
 			
 			vertices[i * m_iNumCols + j].v3Pos = glm::vec3(x, y, z);
 			vertices[i * m_iNumCols + j].v2Tex = glm::vec2(j*du, i*dv);
-			vertices[i * m_iNumCols + j].v3Norm = m_vecNormals[i * m_iNumCols + j];
+			vertices[i * m_iNumCols + j].v3Norm = glm::vec3(0.0f, 1.0f, 0.0f);
 		}
 	}	
+
+	// Generate Normals		
+	m_vecNormals.resize(m_iNumRows * m_iNumCols, glm::vec3());
+
+	float invTwoDX = 1.0f / (2.0f * 1.0f); // 1.0f is cell seperation 
+	float invTwoDZ = 1.0f / (2.0f * 1.0f);
+	for (UINT i = 2; i < m_iNumRows - 1; ++i)
+	{
+		for (UINT j = 2; j < m_iNumCols - 1; ++j) 
+		{
+			float t = m_vecHeightMap[(i - 1)* m_iNumCols + j];
+			float b = m_vecHeightMap[(i + 1)* m_iNumCols + j];
+			float l = m_vecHeightMap[i * m_iNumCols + j - 1];
+			float r = m_vecHeightMap[i * m_iNumCols + j + 1];
+
+			glm::vec3 tanZ(0.0f, (t - b) * invTwoDZ, 1.0f);
+			glm::vec3 tanX(1.0f, (r - l) * invTwoDX, 0.0f);
+
+			glm::vec3 N = glm::cross(tanZ, tanX);
+			glm::normalize(N);
+			vertices[i * m_iNumCols + j].v3Norm = N;
+		}
+	}
 		
 	m_vecVertices = vertices;
 	
@@ -179,9 +188,28 @@ void Terrain::LoadHeightMap()
 	{
 		m_vecHeightMap[i] = static_cast<float>(in[i]) * m_fHeightScale + m_fHeightOffset;
 	}
+
+	std::reverse(m_vecHeightMap.begin(), m_vecHeightMap.end());
 }
 
+void Terrain::ShadowPass()
+{
+	glUseProgram(m_shadowMapProgram);
 
+	glm::mat4 lightViewMatrix = glm::lookAt(lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 lightVPMatrix = Camera::GetInstance()->GetProj() * lightViewMatrix;
+
+	GLint vpLoc = glGetUniformLocation(m_shadowMapProgram, "lightVPMatrix");
+	glUniformMatrix4fv(vpLoc, 1, GL_FALSE, glm::value_ptr(lightVPMatrix));
+
+	GLint modelLoc = glGetUniformLocation(m_shadowMapProgram, "model");
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(glm::mat4())); // default constructor passed in	
+	
+	glBindVertexArray(m_vao);
+	glDrawElements(GL_TRIANGLES, m_vecIndices.size(), GL_UNSIGNED_INT, 0); // m_vecIndices WAS indices.size()
+	glUseProgram(0);
+	glBindVertexArray(0); 
+}
 
 float Terrain::GetHeight(float x, float z) const
 {
@@ -282,9 +310,14 @@ float Terrain::Average(UINT _a, UINT _b)
 
 void Terrain::Render()
 {
+	// Shadowmap stuff
+	m_shadowMap->Start();
+	ShadowPass();
+	m_shadowMap->End();
+
 	//// ** Render Normal Terrain ** ////
 	// Set Culling and Use program	
-	glUseProgram(m_program);
+	glUseProgram(m_program);	
 
 	// Pass mvp to shader
 	glm::mat4 MVP = Camera::GetInstance()->GetProj() * Camera::GetInstance()->GetView() * glm::mat4();
@@ -294,6 +327,20 @@ void Terrain::Render()
 	// Pass campos
 	glm::vec3 camPos = Camera::GetInstance()->GetPos();
 	glUniform3fv(glGetUniformLocation(m_program, "camPos"), 1, value_ptr(camPos));
+
+	GLuint lightPosLoc = glGetUniformLocation(m_program, "lightPos");
+	glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
+
+	// Pass light vp matrix
+	glm::mat4 lightViewMatrix = glm::lookAt(lightPos, glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	glm::mat4 lightVPMatrix = Camera::GetInstance()->GetProj() * lightViewMatrix;
+	GLint vpLoc = glGetUniformLocation(m_program, "lightVPMatrix");
+	glUniformMatrix4fv(vpLoc, 1, GL_FALSE, glm::value_ptr(lightVPMatrix));
+
+	// Pass shadowMap texture
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, m_shadowMap->GetTexture());
+	glUniform1i(glGetUniformLocation(m_program, "shadowMap"), 0);
 
 	// Pass Tex
 	glActiveTexture(GL_TEXTURE0);
@@ -306,7 +353,7 @@ void Terrain::Render()
 
 	// Bind vao and draw object, unbind vao
 	glBindVertexArray(m_vao);
-	//glDrawArrays(GL_TRIANGLES, 0, m_vecVertices.size());
 	glDrawElements(GL_TRIANGLES, m_vecIndices.size(), GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);	
+	glBindTexture(GL_TEXTURE_2D, 0);
 }

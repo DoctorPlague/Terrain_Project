@@ -52,6 +52,16 @@ glm::vec3 Camera::GetPos()
 	return m_cameraPos;
 }
 
+glm::vec3 Camera::GetFront()
+{
+	return m_cameraFront;
+}
+
+glm::vec3 Camera::GetUp()
+{
+	return m_upVec;
+}
+
 void Camera::SetProj(int _screenWidth, int _screenHeight)
 {
 	m_proj = glm::perspective(45.0f, (GLfloat)ki_SCREENWIDTH / (GLfloat)ki_SCREENHEIGHT, 0.1f, 2000.0f);

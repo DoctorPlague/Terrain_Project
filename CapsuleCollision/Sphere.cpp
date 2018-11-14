@@ -147,6 +147,9 @@ void Sphere::Render()
 	glm::vec3 camPos = Camera::GetInstance()->GetPos();
 	glUniform3fv(glGetUniformLocation(m_program, "camPos"), 1, value_ptr(camPos));
 
+	GLuint lightPosLoc = glGetUniformLocation(m_program, "lightPos");
+	glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
+
 	// Pass Tex
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, m_texture);

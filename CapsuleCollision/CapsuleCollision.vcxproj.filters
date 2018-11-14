@@ -15,6 +15,12 @@
     <Filter Include="Source Files\Engine">
       <UniqueIdentifier>{02307f22-0b2d-4e42-b0d9-09455acc3e70}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Particle System">
+      <UniqueIdentifier>{601b87c0-2d42-4849-9fdd-3dd028c00ed3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GPGPU Particle System">
+      <UniqueIdentifier>{76901db5-3e89-4e7f-b5a6-ad308cd4a666}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Line.h">
@@ -59,6 +65,15 @@
     <ClInclude Include="Utilities.h">
       <Filter>Source Files\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="ParticleSystem.h">
+      <Filter>Source Files\Particle System</Filter>
+    </ClInclude>
+    <ClInclude Include="Particle.h">
+      <Filter>Source Files\Particle System</Filter>
+    </ClInclude>
+    <ClInclude Include="GPGPUParticleSystem.h">
+      <Filter>Source Files\GPGPU Particle System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -102,6 +117,15 @@
     </ClCompile>
     <ClCompile Include="ShaderLoader.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Particle.cpp">
+      <Filter>Source Files\Particle System</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleSystem.cpp">
+      <Filter>Source Files\Particle System</Filter>
+    </ClCompile>
+    <ClCompile Include="GPGPUParticleSystem.cpp">
+      <Filter>Source Files\GPGPU Particle System</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -151,6 +175,36 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="Resources\Shaders\ModelVertex.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\ParticleVertexShader.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\ParticleFragmentShader.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\ParticleGeometryShader.gs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\ComputeFragment.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\ComputeShader.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\ComputeVertex.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\ShadowFragment.fs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\ShadowVertex.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\TerrainVertex.vs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="Resources\Shaders\TerrainFragment.fs">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

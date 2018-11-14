@@ -24,7 +24,7 @@ void ssAnimatedModel::VertexBoneData::addBoneData(int BoneID, float Weight) {
 
 ssAnimatedModel::ssAnimatedModel(std::string modelFilname, std::string texFilename){
 		
-	textureID = loadTexture(texFilename);	
+	//textureID = loadTexture(texFilename);	
 
 	program = ShaderLoader::GetInstance().CreateProgram(const_cast<char*>("Resources\\Shaders\\ModelVertex.vs"), const_cast<char*>("Resources\\Shaders\\ModelFragment.fs"));
 
@@ -291,7 +291,7 @@ bool ssAnimatedModel::initMaterials(const aiScene * pScene, const std::string fi
 
 				std::string FullPath = Dir + "/" + p;
 
-				GLuint TextureID = loadTexture(FullPath.c_str());
+				GLuint TextureID = loadTexture("Resources\\Images\\theDude.png");
 					m_Textures[i] = TextureID;
 
 
@@ -316,10 +316,6 @@ GLuint ssAnimatedModel::loadTexture(std::string texFileName){
 	glGenTextures(1, &mtexture);
 	glBindTexture(GL_TEXTURE_2D, mtexture);
 
-	// Set texture wrapping to GL_REPEAT (usually basic wrapping method)
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
 	// Set texture filtering parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -330,8 +326,7 @@ GLuint ssAnimatedModel::loadTexture(std::string texFileName){
 	unsigned char* image = SOIL_load_image(texFileName.c_str(), &width, &height, 0, SOIL_LOAD_RGBA);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
 	glGenerateMipmap(GL_TEXTURE_2D);
-	SOIL_free_image_data(image);
-	glBindTexture(GL_TEXTURE_2D, 0);
+	SOIL_free_image_data(image);	
 
 	printf("\n [loadTexture] fileName %s \n", texFileName.c_str());
 
@@ -351,17 +346,17 @@ void ssAnimatedModel::rotate(float rotSpeed) {
 }
 
 
-void ssAnimatedModel::setShaderEffectVariables(float dt, Terrain* terrain){
+void ssAnimatedModel::setShaderEffectVariables(Terrain* terrain){
 	
 	glUseProgram(this->program);
 
-	if (!bIsTextureSet)
-	{
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glUniform1i(glGetUniformLocation(program, "Texture"), 0);
-		bIsTextureSet = true;
-	}
+	//if (!bIsTextureSet)
+	//{
+	//	glActiveTexture(GL_TEXTURE0);
+	//	glBindTexture(GL_TEXTURE_2D, textureID);
+	//	glUniform1i(glGetUniformLocation(program, "Texture"), 0);
+	//	bIsTextureSet = true;
+	//}
 
 	glm::mat4 model;
 
@@ -402,7 +397,7 @@ void ssAnimatedModel::setShaderEffectVariables(float dt, Terrain* terrain){
 
 	std::vector<Matrix4f> transforms; // = getJointTransforms();
 
-	boneTransforms(dt, transforms);
+	boneTransforms(transforms);
 
 	for (int i = 0; i < transforms.size(); i++) {
 		Matrix4f Transform = transforms[i];
@@ -411,33 +406,33 @@ void ssAnimatedModel::setShaderEffectVariables(float dt, Terrain* terrain){
 
 
 	// lighting calculations
-	GLint colorLoc = glGetUniformLocation(program, "objectColor");
-	glUniform3f(colorLoc, 1.0f, 1.0f, 1.0f);
+	//GLint colorLoc = glGetUniformLocation(program, "objectColor");
+	//glUniform3f(colorLoc, 1.0f, 1.0f, 1.0f);
 
 	// Pass campos
 	glm::vec3 camPos = Camera::GetInstance()->GetPos();
 	glUniform3fv(glGetUniformLocation(program, "camPos"), 1, value_ptr(camPos));
 	    
-	//GLuint lightPosLoc = glGetUniformLocation(program, "lightPos");
-	//glUniform3f(lightPosLoc, this->light->getPosition().x, this->light->getPosition().y, this->light->getPosition().z);
+	GLuint lightPosLoc = glGetUniformLocation(program, "lightPos");
+	glUniform3f(lightPosLoc, lightPos.x, lightPos.y, lightPos.z);
 	//
 	//GLuint lightColorLoc = glGetUniformLocation(program, "lightColor");
 	//glUniform3f(lightColorLoc, this->light->getColor().x, this->light->getColor().y, this->light->getColor().z);
 
-	GLuint specularStrengthLoc = glGetUniformLocation(program, "specularStrength");
-	glUniform1f(specularStrengthLoc, 0.1f);
-
-	GLuint ambientStrengthLoc = glGetUniformLocation(program, "ambientStrength");
-	glUniform1f(ambientStrengthLoc, 0.5f);
+	//GLuint specularStrengthLoc = glGetUniformLocation(program, "specularStrength");
+	//glUniform1f(specularStrengthLoc, 0.1f);
+	//
+	//GLuint ambientStrengthLoc = glGetUniformLocation(program, "ambientStrength");
+	//glUniform1f(ambientStrengthLoc, 0.5f);
 
 
 }
 
 
-void ssAnimatedModel::render(float dt, Terrain* terrain){
+void ssAnimatedModel::render(Terrain* terrain){
 	
-	setShaderEffectVariables(dt, terrain);
-
+	setShaderEffectVariables(terrain);
+	glEnable(GL_DEPTH_TEST);
 	glBindVertexArray(m_VAO);
 
 	for (GLuint i = 0; i < m_Entries.size(); i++) {
@@ -446,13 +441,10 @@ void ssAnimatedModel::render(float dt, Terrain* terrain){
 
 		assert(MaterialIndex < m_Textures.size());
 
-		if (m_Textures[MaterialIndex]) {
-			//m_Textures[MaterialIndex]->Bind(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, m_Textures[MaterialIndex]);
-						
+		if (m_Textures[MaterialIndex]) {						
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, m_Textures[MaterialIndex]);
-			glUniform1i(glGetUniformLocation(program, "Texture"), MaterialIndex);
+			glUniform1i(glGetUniformLocation(program, "tex"), MaterialIndex);
 		}
 
 		//glDrawElementsBaseVertex(GL_TRIANGLES,
@@ -472,7 +464,7 @@ void ssAnimatedModel::render(float dt, Terrain* terrain){
 
 
 
-void ssAnimatedModel::boneTransforms(float timeInSeconds, std::vector<Matrix4f>& transforms){
+void ssAnimatedModel::boneTransforms(std::vector<Matrix4f>& transforms){
 	Matrix4f Identity;
 		Identity.InitIdentity();		
 

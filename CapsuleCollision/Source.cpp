@@ -6,15 +6,17 @@
 #include "Sphere.h"
 #include "Star.h"
 #include "TessQuad.h"
+#include "ParticleSystem.h"
+#include "GPGPUParticleSystem.h"
 #include "FrameBuffer.h"
 #include "ssAnimatedModel.h"
 
 Terrain* exampleTerrain = new Terrain();
-ssAnimatedModel* exampleModel;// = new ssAnimatedModel("Resources\\Images\\theDude_idle_run.DAE", "Resources\\Images\\theDude.png");
-Sphere* exampleSphere = new Sphere();
-Star* exampleStar = new Star();
-TessQuad* exampleTessQuad = new TessQuad();
-FrameBuffer* exampleFrameBuffer = new FrameBuffer();
+//FrameBuffer* exampleFrameBuffer = new FrameBuffer();
+ssAnimatedModel* exampleModel = nullptr;
+ParticleSystem* exampleParticleSystem = nullptr;
+GPGPUParticleSystem* exampleGPGPUParticleSystem = nullptr;
+
 float cameraDistanceOffset = 0;
 float fDeltaTotal = 0.0f;
 
@@ -36,18 +38,18 @@ int main(int argc, char** argv) {
 	CClock::GetInstance()->Initialise();
 	Input::GetInstance()->Initialize();
 	Camera::GetInstance()->SetProj(900, 900);
-		
-	exampleStar->Initialize(glm::vec3(), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 0.0f, 1.0f), 0.0f);	
-	exampleSphere->Initialize(glm::vec3(), glm::vec3(0.5f, 0.5f, 0.5f), glm::vec3(0.0f, 0.0f, 1.0f), 0.0f);
-	exampleTessQuad->Initialize(glm::vec3(), glm::vec3(1.0f, 1.0f, 1.0f), glm::vec3(0.0f, 0.0f, 1.0f), 0.0f);
-	exampleFrameBuffer->Initialize();
+			
+	//exampleFrameBuffer->Initialize();
 	exampleTerrain->Initialize();	
-
-	exampleModel = new ssAnimatedModel("Resources\\Images\\theDude_idle_run.DAE", "Resources\\Images\\theDude.png");
+	exampleModel = new ssAnimatedModel("Resources\\Images\\theDude.DAE", "Resources\\Images\\theDude.png");
 	exampleModel->setCurrentAnimation(0, 30); // set idle animation
 	exampleModel->setPosition(glm::vec3(0.0f, 0.0f, 0.0f));
 	exampleModel->setScale(glm::vec3(0.0675f));
 	exampleModel->setSpeed(50.0f);
+	exampleParticleSystem = new ParticleSystem(glm::vec3(0.0f, 100.0f, 0.0f), "Resources\\Images\\RainDrop.png");
+	exampleParticleSystem->Initialize();
+	exampleGPGPUParticleSystem = new GPGPUParticleSystem();
+	exampleGPGPUParticleSystem->Initialize();
 
 	glutDisplayFunc(Render);
 	glutIdleFunc(Update);
@@ -60,16 +62,15 @@ int main(int argc, char** argv) {
 void Render()
 {		
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-	exampleFrameBuffer->BindFrameBuffer();	
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	//exampleFrameBuffer->BindFrameBuffer();	
 	
-	exampleTerrain->Render();
-	exampleSphere->Render();
-	//exampleStar->Render();
-	//exampleTessQuad->Render();
-	exampleModel->render(CClock::GetInstance()->GetDeltaTick(), exampleTerrain);
+	exampleTerrain->Render();	
+	exampleModel->render(exampleTerrain);
+	exampleParticleSystem->Render(CClock::GetInstance()->GetDeltaTick() / 1000);
+	exampleGPGPUParticleSystem->Render();
 	
-	exampleFrameBuffer->Render(fDeltaTotal);
+	//exampleFrameBuffer->Render(fDeltaTotal);
 
 	glutSwapBuffers();
 }
@@ -81,14 +82,8 @@ void Update()
 	float fDeltaTick = CClock::GetInstance()->GetDeltaTick() / 1000;
 	fDeltaTotal += fDeltaTick;
 
-	// Update stuff goes here		
-	glm::vec3 spherePos = exampleSphere->GetTranslate();
-	float fHeight = exampleTerrain->GetHeight(spherePos.x, spherePos.z);	
+	// Update stuff goes here				
 	cameraDistanceOffset = glm::clamp(cameraDistanceOffset, 0.5f, 100.0f);
-	exampleSphere->SetHeight(fHeight);
-	exampleStar->SetPosition(spherePos + glm::vec3(0.0f, 3.0f, 0.0f));
-	exampleTessQuad->SetPosition(spherePos + glm::vec3(0.0f, 5.0f, 0.0f));	
-
 	Camera::GetInstance()->UpdatePosition(exampleModel->GetPosition() + glm::vec3(0.0f, cameraDistanceOffset, cameraDistanceOffset));
 	Camera::GetInstance()->Update();
 
@@ -110,15 +105,15 @@ void Update()
 		exampleModel->rotate(0.0f);
 	}
 
-	if (Input::GetInstance()->KeyState['w'] == INPUT_FIRST_PRESS || Input::GetInstance()->KeyState['w'] == INPUT_HOLD)
+
+	if (Input::GetInstance()->KeyState[32] == INPUT_FIRST_PRESS || Input::GetInstance()->KeyState[32] == INPUT_HOLD)
 	{
-		//exampleSphere->RelativeTranslation(glm::vec3(0.0f, 0.0f, -25.0f), fDeltaTick);		
 		exampleModel->move(25.0f);
 		if (exampleModel->bMoving == false) {
 			exampleModel->bMoving = true;
-			exampleModel->setCurrentAnimation(31, 50); // run animation
+			exampleModel->setCurrentAnimation(71, 80); // jump animation
 		}
-	}
+	}		
 	else if (Input::GetInstance()->KeyState['s'] == INPUT_FIRST_PRESS || Input::GetInstance()->KeyState['s'] == INPUT_HOLD)
 	{
 		//exampleSphere->RelativeTranslation(glm::vec3(0.0f, 0.0f, 25.0f), fDeltaTick);
@@ -126,6 +121,15 @@ void Update()
 		if (exampleModel->bMoving == false) {
 			exampleModel->bMoving = true;
 			exampleModel->setCurrentAnimation(51, 70); // run animation
+		}
+	}
+	else if (Input::GetInstance()->KeyState['w'] == INPUT_FIRST_PRESS || Input::GetInstance()->KeyState['w'] == INPUT_HOLD)
+	{
+		//exampleSphere->RelativeTranslation(glm::vec3(0.0f, 0.0f, -25.0f), fDeltaTick);		
+		exampleModel->move(25.0f);
+		if (exampleModel->bMoving == false) {
+			exampleModel->bMoving = true;
+			exampleModel->setCurrentAnimation(31, 50); // run animation
 		}
 	}
 	else
@@ -136,6 +140,7 @@ void Update()
 			exampleModel->setCurrentAnimation(0, 30); //idle animation
 		}
 	}
+	
 
 	if (Input::GetInstance()->MouseState[0] == INPUT_FIRST_PRESS || Input::GetInstance()->MouseState[0] == INPUT_HOLD)
 	{
@@ -152,9 +157,8 @@ void Update()
 void Exit()
 {
 	delete exampleTerrain;
-	exampleTerrain = nullptr;
-	delete exampleSphere;
-	exampleSphere = nullptr;
-	delete exampleStar;
-	exampleStar = nullptr;
+	delete exampleModel;
+	//delete exampleFrameBuffer;
+	delete exampleParticleSystem;
+	delete exampleGPGPUParticleSystem;
 }

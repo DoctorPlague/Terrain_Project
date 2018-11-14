@@ -67,6 +67,55 @@ std::string ShaderLoader::ReadShader(const char *filename)
 	return shaderCode;
 }
 
+GLuint ShaderLoader::CreateProgram(const char * computeShaderFilename)
+{
+	std::string _computeShaderFilename = computeShaderFilename;
+
+	GLuint compute_shader;
+
+	std::map<std::string, GLuint>::iterator it = ComputeShaders.find(_computeShaderFilename);
+	if (it == ComputeShaders.end())
+	{
+		std::string compute_shader_code = ReadShader(computeShaderFilename);
+		compute_shader = CreateShader(GL_COMPUTE_SHADER, compute_shader_code, "compute shader");
+		ComputeShaders[_computeShaderFilename] = compute_shader;
+	}
+	else
+	{
+		compute_shader = it->second;
+	}
+
+	GLuint program;
+	it = Programs.find(_computeShaderFilename);
+	if (it == Programs.end())
+	{
+		int link_result = 0;
+		program = glCreateProgram();
+		glAttachShader(program, compute_shader);
+
+		glLinkProgram(program);
+		glGetProgramiv(program, GL_LINK_STATUS, &link_result);
+		Programs[_computeShaderFilename] = program;
+
+		if (link_result == GL_FALSE)
+		{
+			int info_log_length = 0;
+			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &info_log_length);
+			std::vector<char> program_log(info_log_length);
+			glGetProgramInfoLog(program, info_log_length, NULL, &program_log[0]);
+			std::cout << "Shader Loader : LINK ERROR" << std::endl << &program_log[0] << std::endl;
+			return 0;
+		}
+		return program;
+	}
+	else
+	{
+		int link_result = 0;
+		program = it->second;
+		return program;
+	}
+}
+
 //Name:			    CreateShader
 //Parameters:		GLenum, string source, char* shadername
 //Return Type:		GLuint

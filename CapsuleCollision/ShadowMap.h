@@ -11,6 +11,8 @@ public:
 	void Start();
 	void End();
 
+	GLuint GetTexture() { return depthMapTexture; }
+
 private:
 	GLuint depthMapFBO; // global variable
 	GLuint depthMapTexture;

@@ -2,6 +2,7 @@
 #include "Dependencies\glew\glew.h"
 #include "Dependencies\freeglut\freeglut.h"
 #include "Dependencies\glm\glm.hpp"
+#include "ShadowMap.h"
 #include <vector>
 
 struct TerrainVertex
@@ -20,6 +21,7 @@ public:
 	void BuildVertexBuffer();
 	void BuildIndexBuffer();
 	void LoadHeightMap();
+	void ShadowPass();
 	float GetHeight(float x, float z) const;
 	void Smooth();
 	bool InBounds(UINT _a, UINT _b);	
@@ -30,13 +32,14 @@ private:
 	GLuint m_vbo;
 	GLuint m_vao;
 	GLuint m_program;	
-	GLuint m_grassProgram;
+	GLuint m_shadowMapProgram;
 	GLuint m_texture;
 	
 	std::vector<TerrainVertex> m_vecVertices;
 	std::vector<int> m_vecIndices;
 	std::vector<float> m_vecHeightMap;
 	std::vector<glm::vec3> m_vecNormals;
+	std::shared_ptr<ShadowMap> m_shadowMap;
 	unsigned int m_iNumIndices;
 	
 	unsigned int m_iNumCols;

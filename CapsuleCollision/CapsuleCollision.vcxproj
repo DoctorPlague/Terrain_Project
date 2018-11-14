@@ -133,9 +133,12 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="clock.h" />
     <ClInclude Include="FrameBuffer.h" />
+    <ClInclude Include="GPGPUParticleSystem.h" />
     <ClInclude Include="KeyboardInput.h" />
     <ClInclude Include="Line.h" />
     <ClInclude Include="Math_3d.h" />
+    <ClInclude Include="Particle.h" />
+    <ClInclude Include="ParticleSystem.h" />
     <ClInclude Include="ShaderLoader.h" />
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="Sphere.h" />
@@ -149,9 +152,12 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="clock.cpp" />
     <ClCompile Include="FrameBuffer.cpp" />
+    <ClCompile Include="GPGPUParticleSystem.cpp" />
     <ClCompile Include="KeyboardInput.cpp" />
     <ClCompile Include="Line.cpp" />
     <ClCompile Include="Math_3d.cpp" />
+    <ClCompile Include="Particle.cpp" />
+    <ClCompile Include="ParticleSystem.cpp" />
     <ClCompile Include="ShaderLoader.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="Source.cpp" />
@@ -162,6 +168,9 @@
     <ClCompile Include="TessQuad.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Shaders\ComputeFragment.fs" />
+    <None Include="Resources\Shaders\ComputeShader.fs" />
+    <None Include="Resources\Shaders\ComputeVertex.vs" />
     <None Include="Resources\Shaders\FragmentShader.fs" />
     <None Include="Resources\Shaders\FrameBufferFragmentShader.fs" />
     <None Include="Resources\Shaders\FrameBufferVertexShader.vs" />
@@ -170,9 +179,16 @@
     <None Include="Resources\Shaders\GrassVertexShader.vs" />
     <None Include="Resources\Shaders\ModelFragment.fs" />
     <None Include="Resources\Shaders\ModelVertex.vs" />
+    <None Include="Resources\Shaders\ParticleFragmentShader.fs" />
+    <None Include="Resources\Shaders\ParticleGeometryShader.gs" />
+    <None Include="Resources\Shaders\ParticleVertexShader.vs" />
+    <None Include="Resources\Shaders\ShadowFragment.fs" />
+    <None Include="Resources\Shaders\ShadowVertex.vs" />
     <None Include="Resources\Shaders\StarFragment.fs" />
     <None Include="Resources\Shaders\StarGeometry.gs" />
     <None Include="Resources\Shaders\StarVertex.vs" />
+    <None Include="Resources\Shaders\TerrainFragment.fs" />
+    <None Include="Resources\Shaders\TerrainVertex.vs" />
     <None Include="Resources\Shaders\TessControlShader.tcs" />
     <None Include="Resources\Shaders\TessEvaluationShader.tes" />
     <None Include="Resources\Shaders\TessFragmentShader.fs" />

@@ -21,6 +21,7 @@ class ShaderLoader
 	public:
 		static ShaderLoader& GetInstance();
 		static void DestroyInstance();
+		GLuint CreateProgram(const char* computeShaderFilename);
 		GLuint CreateProgram(const char* VertexShaderFilename,
 							 const char* FragmentShaderFilename);
 		GLuint CreateProgram(const char* VertexShaderFilename,
@@ -36,5 +37,6 @@ class ShaderLoader
 		std::map<std::string, GLuint> GeometryShaders;
 		std::map<std::string, GLuint> TessCtrlShaders;
 		std::map<std::string, GLuint> TessEvalShaders;
+		std::map<std::string, GLuint> ComputeShaders;
 		std::map<std::string, GLuint> Programs;
 };

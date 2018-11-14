@@ -50,7 +50,7 @@ public:
 	~ssAnimatedModel();
 
 	bool loadMesh(std::string fileName);
-	void render(float dt, Terrain* terrain);
+	void render(Terrain* terrain);
 
 	GLuint numBones() {
 		return mNumBones;
@@ -58,7 +58,7 @@ public:
 
 	glm::vec3 GetPosition() { return position; }
 
-	void boneTransforms(float timeInSeconds, std::vector<Matrix4f> &transforms);
+	void boneTransforms(std::vector<Matrix4f> &transforms);
 	void setCurrentAnimation(int startFrameNum, int endFramNum);
 
 	void setPosition(glm::vec3 _position);
@@ -139,7 +139,7 @@ int mNumBones;
 	
 	void ReadNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform);
 
-	void setShaderEffectVariables(float dt, Terrain* terrain);
+	void setShaderEffectVariables(Terrain* terrain);
 
 	//rendering
 
